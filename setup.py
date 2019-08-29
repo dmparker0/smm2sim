@@ -12,6 +12,6 @@ setup(
     description='A tool for simulating the GSA Mario Maker 2 Endless Expert League',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    download_url = 'https://github.com/dmparker0/nflsim/archive/v1.0.0.tar.gz',
+    download_url = 'https://github.com/dmparker0/smm2sim/archive/v1.0.0.tar.gz',
     keywords = ['Mario','Mario Maker','SMM2','GSA','speedrun','simulation','statistics'], 
 )
