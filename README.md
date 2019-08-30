@@ -143,7 +143,7 @@ seeding = sim.seeding()
 playoffs = sim.playoffs()
 ```
 
-By default, all of the aggregated dataframes use MultiIndexes incorporating the simulation number and the within-simulation row number. The class methods include an option to extract the "Simulation" portion of the MultiIndex into its own column:
+By default, all of the aggregated dataframes use MultiIndexes incorporating the simulation number and the within-simulation row number. The class methods include an option to extract the MultiIndex into separate columns in the dataframe:
 ```python
 standings_reindexed = sim.standings(reindex=True)
 ```
