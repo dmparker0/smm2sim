@@ -25,19 +25,9 @@ def getMatches():
     repl_df = pd.read_csv(StringIO(get('https://pastebin.com/raw/0kyaPRqX').text))
     replacements = repl_df.to_dict('records')
     for repl in replacements:
-        matches['Winner'].str.replace(repl['Old'], repl['New'])
-        matches['Loser'].str.replace(repl['Old'], repl['New'])
+        matches['Winner'] = matches['Winner'].str.replace(repl['Old'], repl['New'])
+        matches['Loser'] = matches['Loser'].str.replace(repl['Old'], repl['New'])
     return matches[['Winner','Loser','W Pts','L Pts']]
-    
-def adjustMatches(matches):
-    df = pd.DataFrame(matches[['Winner','Loser','W Pts']].values.tolist() +
-                      matches[['Loser','Winner','L Pts']].values.tolist(),
-                      columns = ['Player','Opponent','Pts'])
-    totalpts = df.groupby(['Player']).agg({'Pts':'sum','Opponent':'count'}).reset_index()
-    totalpts = totalpts.rename(columns={'Pts':'Total Pts','Opponent':'Games Played'})
-    opp_pts = totalpts.rename(columns={'Player':'Opponent','Total Pts':'Opponent Total Pts','Games Played':'Opponent Games Played'})
-    merged = pd.merge(pd.merge(df, totalpts, on='Player'), opp_pts, on='Opponent')
-    return merged[['Player','Opponent','Pts','Total Pts','Opponent Total Pts','Games Played']]
     
 def getPointLog():
     games = pd.read_csv(StringIO(get('https://pastebin.com/raw/eTmbZM46').text))
@@ -46,10 +36,7 @@ def getPointLog():
                           columns= ['Player','Opponent','Clears','GmOv','TB'])
     points = points[~np.isnan(points['Clears'])]
     points['Pts'] = points['Clears'] - points['GmOv']
-    played = points.groupby(['Player']).agg({'Clears':'count'}).reset_index()
-    played = played.rename(columns={'Clears':'Games Played'})
-    merged = pd.merge(points, played, on='Player')
-    return merged
+    return points
 
 def getUnplayed():
     matches = pd.read_csv(StringIO(get('https://pastebin.com/raw/rmb6A8uW').text))

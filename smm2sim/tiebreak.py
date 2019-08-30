@@ -22,13 +22,10 @@ def breakTies(gamelog, tiedplayers):
     remainder = [x['Player'] for x in tiedplayers]
     filtered = gamelog[gamelog['Player'].isin(remainder) & gamelog['Opponent'].isin(remainder)]
     if not filtered.empty:
-        remainder = resolveWinPercentage(filtered)
+        grouped = filtered.groupby(['Player']).agg({'Pts':'sum'}).reset_index()
+        remainder = grouped[(grouped['Pts'].values == grouped['Pts'].values.max())]['Player'].values
     if len(remainder) == 1:
         return remainder[0]
     elif len(remainder) == 2 and len(tiedplayers) != 2:
         return breakTies(gamelog, [x for x in tiedplayers if x['Player'] in remainder])
     return np.random.choice(remainder)
-   
-def resolveWinPercentage(gamelog):
-    grouped = gamelog.groupby(['Player']).agg({'Pts':'sum'}).reset_index()
-    return grouped[(grouped['Pts'].values == grouped['Pts'].values.max())]['Player'].values

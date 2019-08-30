@@ -12,7 +12,7 @@ class PWR(object):
         else:
             self.values = values.copy()
         if pwr is None:
-            self.pwr = [x for x in list(self.values) if x not in ['Player','Games Played']][0]
+            self.pwr = [x for x in list(self.values) if x != 'Player'][0]
         else:
             self.pwr = pwr
         
@@ -21,12 +21,6 @@ class PWR(object):
         
     def regress(self, df):
         self.values[pwr] = self.regress_to.regress(df, pwr)
-        return self
-
-    def addGamesPlayed(self, gamelog):
-        if 'Games Played' not in self.values:
-            grouped = gamelog.groupby('Player')['Games Played'].first().reset_index()
-            self.values = pd.merge(self.values, grouped, on='Player')
         return self
 
 class SRS(PWR):
@@ -74,7 +68,6 @@ class PWRsystems(object):
         self.combined = self.systems[0].values[['Player']]
         for system in self.systems:
             self.combined = pd.merge(self.combined, system.values, on='Player', suffixes=('','_'))
-            self.combined = self.combined[[x for x in self.combined if x != 'Games Played_']]
             new_z = stats.zscore(self.combined[system.pwr].values)
             new_weights = [system.weight] * self.combined.shape[0]
             if 'z_scores' not in self.combined:    
@@ -89,4 +82,4 @@ class PWRsystems(object):
             self.combined['PWR'] = self.combined[self.systems[0].pwr].values
         else:
             self.combined['PWR'] = self.combined['Avg_z'].values * self.scale['st_dev'] + self.scale['mean']
-        return PWR(regress_to=self.regress_to, values=self.combined[['Player','PWR','Games Played']], pwr='PWR')
+        return PWR(regress_to=self.regress_to, values=self.combined[['Player','PWR']], pwr='PWR')

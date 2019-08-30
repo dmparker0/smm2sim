@@ -1,4 +1,4 @@
-from .gamedata import getPlayers, getPointLog, getMatches, adjustMatches, getUnplayed
+from .gamedata import getPlayers, getPointLog, getMatches, getUnplayed
 from .pwr import PWRsystems
 from .regression import Regression
 from .simulate import simulateBracket, simulateMatch, simulateGamelog
@@ -24,7 +24,6 @@ class Simulate(object):
         self.unplayed = getUnplayed()
         for system in self.pwr_systems.systems:
             system.calculate(gamelog=self.points)
-            system.addGamesPlayed(self.points)
             self.regress(system)
         self.pwr = self.pwr_systems.combine()
         self.regress(self.pwr)
@@ -79,12 +78,14 @@ class Simulation(object):
             self.regularseason = sim.played
         else:
             simulated = simulateGamelog(sim.unplayed, self.rankings, sim.st_dev)
-            self.regularseason = pd.concat([sim.played, simulated])
-        adjusted = adjustMatches(self.regularseason)
-        mapper = {'Player':'Opponent','Division':'OppDivision'}
-        df = pd.merge(pd.merge(adjusted, sim.players, on='Player'), sim.players.rename(mapper, axis=1), on='Opponent')
-        self.standings = pd.merge(df.groupby(['Player','Division']).agg({'Pts':'sum'}).reset_index(), 
-                                  self.rankings, on='Player').drop('Games Played', axis=1)
+            self.regularseason = pd.concat([sim.played, simulated], ignore_index=True)
+        adjusted = pd.DataFrame([x + [1] for x in self.regularseason[['Winner','Loser','W Pts']].values.tolist()] +
+                                [x + [0] for x in self.regularseason[['Loser','Winner','L Pts']].values.tolist()],
+                                columns=['Player','Opponent','Pts','Wins'])
+        df = pd.merge(pd.merge(adjusted, sim.players, on='Player'), 
+                      sim.players.rename({'Player':'Opponent','Division':'OppDivision'}, axis=1), on='Opponent')
+        self.standings = pd.merge(df.groupby(['Player','Division']).agg({'Pts':'sum','Wins':'sum'}).reset_index(), 
+                                  self.rankings, on='Player')
         self.seeding = getPlayoffSeeding(df)
         self.playoffs = self.simulatePlayoffs(sim)
         
