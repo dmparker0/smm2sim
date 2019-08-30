@@ -12,9 +12,9 @@ pip install smm2sim
 
 ### How it works
 
-During each simulation, smm2sim uses the methods described below to assign a winner to all remaining matches in the season. It then calculates seasonal point totals and breaks ties to determine playoff seeding, and the playoffs are simulated match-by-match.
+During each simulation, smm2sim uses the methods described below to assign a winner to all remaining matches in the season. It then calculates seasonal point totals and breaks ties to determine playoff seeding, and the playoffs are simulated match-by-match. The playoff structure is assumed to be single-elimination best-of-3 matches with no reseeding.
 
-Before beginning the simulations, each player is assigned a power rating (PWR), such that a player with a PWR of 8 would be expected to score an average of 8 points in a 15 minute match. By default, the base power rankings for each player a simple average of their past results (excluding points scored during tiebreakers/sudden death). Custom ranking systems are also supported, which can be combined with the default ratings or replace them entirely. The individual rating systems and the combined rankings can be regressed to the mean (or to custom player-specific values) as desired.
+Before beginning the simulations, each player is assigned a power rating (PWR), such that a player with a PWR of 8 would be expected to score an average of 8 points in a 15 minute match. By default, the base power rankings for each player are a simple average of their past results (excluding points scored during untimed tiebreakers). Custom ranking systems are also supported, which can be combined with the default ratings or replace them entirely. The individual rating systems and the combined rankings can be regressed to the mean (or to custom player-specific values) as desired.
 
 The player PWR rankings are adjusted at the beginning of each season simulation by a random amount, determined using a normal distribution with mean 0 and a user-provided standard deviation (1 point by default):
 ```
