@@ -30,7 +30,7 @@ win_probability = 1 - scipy.stats.norm(pwr_difference, [stdev]).cdf(0)
 is_winner = numpy.random.random() < win_probability
 ```
 
-The standard deviation used to generate the normal distribution ([2.5 points by default]) is configurable.
+The standard deviation used to generate the normal distribution (2.5 points by default) is configurable.
 
 ### Usage
 
