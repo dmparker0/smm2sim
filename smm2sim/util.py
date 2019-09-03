@@ -5,14 +5,14 @@ playoff_series_ids = {
     ('A', 4):('A','Division Quarterfinals',4),
     ('A', 5):('A','Division Semifinals',1),
     ('A', 6):('A','Division Semifinals',2),
-    ('A', 7):('A','Division Finals',None),
+    ('A', 7):('A','Division Finals',1),
     ('B', 1):('B','Division Quarterfinals',1),
     ('B', 2):('B','Division Quarterfinals',2),
     ('B', 3):('B','Division Quarterfinals',3),
     ('B', 4):('B','Division Quarterfinals',4),
     ('B', 5):('B','Division Semifinals',1),
     ('B', 6):('B','Division Semifinals',2),
-    ('B', 7):('B','Division Finals',None)}
+    ('B', 7):('B','Division Finals',1)}
 
 def extractText(tosearch, delim_left='', delim_right= None,
                 reverse_left=False, reverse_right=False,

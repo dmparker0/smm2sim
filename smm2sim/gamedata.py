@@ -18,10 +18,11 @@ def getMatches():
     lm = lambda x:sum(np.where(np.repeat(x[0], len(x[1])) == np.array(x[1]), np.isnan(x[2]), 0))
     w_penalty = [lm(x) * 2 for x in matches[['Loser','Winner_list','L Clears']].values]
     l_penalty = [(lm(x) in [1, 2]) * 2 for x in matches[['Loser','Loser_list','L Clears']].values]
+    no_penalty = [sum(np.where(np.isnan(x), 1, 0)) == 3 for x in matches['W Clears'].values]
     #calculate match point totals
     is_sweep = [~np.isin(x[0], x[1]) for x in matches[['Loser','Winner_list']].values]
-    matches['W Pts'] = np.where(is_sweep, 4, 3) - w_penalty
-    matches['L Pts'] = np.where(is_sweep, 0, 1) - l_penalty
+    matches['W Pts'] = np.where(is_sweep, 4, 3) - np.where(no_penalty, 0, w_penalty)
+    matches['L Pts'] = np.where(is_sweep, 0, 1) - np.where(no_penalty, 0, l_penalty)
     repl_df = pd.read_csv(StringIO(get('https://pastebin.com/raw/0kyaPRqX').text))
     replacements = repl_df.to_dict('records')
     for repl in replacements:
