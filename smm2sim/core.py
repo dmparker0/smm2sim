@@ -46,10 +46,6 @@ class Simulate(object):
         if self.simulations.combined:
             return self.copied(self.simulations.regularseason.copy(), reindex)
     
-    def seeding(self, reindex=False):
-        if self.simulations.combined:
-            return self.copied(self.simulations.seeding.copy(), reindex)
-    
     def standings(self, reindex=False):
         if self.simulations.combined:
             return self.copied(self.simulations.standings.copy(), reindex)
@@ -88,6 +84,7 @@ class Simulation(object):
                                   self.rankings, on='Player')
         self.seeding = getPlayoffSeeding(df)
         self.playoffs = self.simulatePlayoffs(sim)
+        self.standings = pd.merge(self.standings, self.seeding, how='left', on='Player', suffixes=('', '_')).drop('Division_', axis=1)
         
     #simulates nba playoffs
     def simulatePlayoffs(self, sim):
@@ -112,7 +109,6 @@ class Simulations(object):
         if combine:
             indices = list(range(len(values)))
             self.playoffs = pd.concat([x.playoffs for x in values], keys=indices).rename_axis(['Simulation','Row'])
-            self.seeding = pd.concat([x.seeding for x in values], keys=indices).rename_axis(['Simulation','Row'])
             self.standings = pd.concat([x.standings for x in values], keys=indices).rename_axis(['Simulation','Row'])
             self.regularseason = pd.concat([x.regularseason for x in values], keys=indices).rename_axis(['Simulation','Row'])
         else:
