@@ -4,17 +4,18 @@ import pandas as pd
 import numpy as np
 
 #simulates games in a gamelog using standard method
-def simulateGamelog(gamelog, rankings, st_dev):
+def simulateGamelog(gamelog, rankings, st_dev, season):
     merged = pd.merge(gamelog, rankings.rename({'Player':'Home'}, axis=1), on='Home').rename({'PWR':'Home PWR'}, axis=1)
     merged = pd.merge(merged, rankings.rename({'Player':'Away'}, axis=1), on='Away').rename({'PWR':'Away PWR'}, axis=1)
     dist = stats.norm(merged['Home PWR'].values - merged['Away PWR'].values, st_dev)
     test_vals = 1 - dist.cdf(0)
     random_vals = np.random.random((3, merged.shape[0]))
+    w_pts = 4 if season == 1 else 3
     home_win = np.sum(np.less(random_vals, test_vals).astype(int), axis=0)
     merged['Winner'] = np.where(np.greater(home_win, 1), merged['Home'], merged['Away'])
     merged['Loser'] = np.where(np.greater(home_win, 1), merged['Away'], merged['Home'])
-    merged['W Pts'] = np.where(np.isin(home_win, [1, 2]), 3, 4)
-    merged['L Pts'] = 4 - merged['W Pts'].values
+    merged['W Pts'] = np.where(np.isin(home_win, [1, 2]), w_pts - 1, w_pts)
+    merged['L Pts'] = w_pts - merged['W Pts'].values
     return merged[['Winner','Loser','W Pts','L Pts']]
 
 #simulates a "bracket"-style group of games between seeded teams
@@ -45,7 +46,8 @@ def simulateBracket(players, st_dev, n_winners=1):
             else:
                 return winner
         else:
-            result = simulateMatch(matchups[0], matchups[1], st_dev=st_dev)
+            n_games = 5 if round_n < 3 else 7
+            result = simulateMatch(matchups[0], matchups[1], st_dev=st_dev, n_games=n_games)
             seriescounter[round_n] = seriescounter[round_n] + 1
             results.append({'Winner':result['Winner'].name,'Loser':result['Loser'].name,
                             'Games':result['Games'],'Round':round_n,'Series':seriescounter[round_n]})
@@ -62,9 +64,8 @@ def simulateBracket(players, st_dev, n_winners=1):
             break
     return getWinners(seeds)
 
-def simulateMatch(player_a, player_b, st_dev):
-    n_games = 3
-    target_wins = 2
+def simulateMatch(player_a, player_b, st_dev, n_games):
+    target_wins = int(n_games / 2) + 1
     pwr_difference = [player_a.pwr - player_b.pwr] * n_games
     win_probability = 1 - stats.norm(pwr_difference, st_dev).cdf(0)
     is_winner = (np.random.random(n_games) < win_probability).astype(int)
