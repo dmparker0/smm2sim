@@ -1,4 +1,4 @@
-from pandas import DataFrame
+import pandas as pd
 from itertools import compress
 from collections import OrderedDict
 
@@ -11,7 +11,7 @@ class Player(object):
 
 class Players(object):
     def __init__(self, values, indexed=False):
-        if type(values) is DataFrame:
+        if type(values) is pd.DataFrame:
             playerdict = values.to_dict('records')
             self.values = [Player(name=x['Player'], div=x['Division'], 
                                   pwr=x['PWR'], seed=x['Seed']) for x in playerdict]
