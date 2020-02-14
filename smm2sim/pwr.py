@@ -28,9 +28,36 @@ class SRS(PWR):
         PWR.__init__(self, weight, regress_to, pwr='SRS')
     
     def calculate(self, **kwargs):
-        df = kwargs['gamelog'].groupby('Player').agg({'Pts':'mean'})
-        df = df.rename(columns={'Pts':'SRS'}).reset_index()
-        self.values = df[['Player','SRS']]
+        if kwargs['season'] == 1:
+            df = kwargs['gamelog'].groupby('Player').agg({'Pts':'mean'})
+            df = df.rename(columns={'Pts':'SRS'}).reset_index()
+            self.values = df[['Player','SRS']]
+        else:
+            grouped = kwargs['gamelog'].groupby('Player').agg({'Difference':'sum','Opponent':lambda x: list(x)})
+            grouped['Games Played'] = grouped['Opponent'].str.len()
+            grouped['Margin'] = grouped['Difference'].values / grouped['Games Played'].values
+            grouped['SRS'] = grouped['Margin']
+            grouped['OldSRS'] = grouped['Margin']
+            players = grouped.to_dict('index')
+            for i in range(10000):
+                delta = 0.0
+                for name, player in players.items():
+                    sos = 0.0
+                    for opponent in player['Opponent']:
+                        sos += players[opponent]['SRS']
+                    players[name]['OldSRS'] = player['SRS']
+                    players[name]['SRS'] = player['Margin'] + (sos / player['Games Played'])
+                    delta = max(delta, abs(players[name]['SRS'] - players[name]['OldSRS']))
+                if delta < 0.001:
+                    break
+            srs_sum = 0.0
+            for name, player in players.items():
+                srs_sum += players[name]['SRS']
+            srs_avg = srs_sum / len(players)
+            for name, player in players.items():
+                players[name]['SRS'] = player['SRS'] - srs_avg
+            df = pd.DataFrame.from_dict(players, orient='index').reset_index()
+            self.values = df.rename({'index':'Player'}, axis=1)[['Player','SRS']]
         return self
         
 class PWRsystems(object):
@@ -60,7 +87,7 @@ class PWRsystems(object):
                         self.systems.append(system)
                         
     def setDefaultScale(self):
-        self.scale = {'st_dev':1.75,'mean':5.5}
+        self.scale = {'st_dev':1.05,'mean':0}
 
     def combine(self):
         if (len(self.systems) > 1) and (self.scale is None):
