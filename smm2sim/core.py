@@ -10,20 +10,21 @@ import pandas as pd
 import numpy as np
 
 class Simulate(object):
-    def __init__(self, n_sims, pwr_systems=None, rank_adj=1, st_dev=2.5):
+    def __init__(self, n_sims, pwr_systems=None, rank_adj=0.5, st_dev=1.6, season=2):
         self.n_sims = n_sims
         self.rank_adj = rank_adj
         self.st_dev = st_dev
+        self.season = season
         if pwr_systems is None:
             self.pwr_systems = PWRsystems()
         else:
             self.pwr_systems = pwr_systems
-        self.players = getPlayers()
-        self.points = getPointLog()
-        self.played = getMatches()
-        self.unplayed = getUnplayed()
+        self.players = getPlayers(season)
+        self.points = getPointLog(season)
+        self.played = getMatches(season)
+        self.unplayed = getUnplayed(season)
         for system in self.pwr_systems.systems:
-            system.calculate(gamelog=self.points)
+            system.calculate(gamelog=self.points, season=season)
             self.regress(system)
         self.pwr = self.pwr_systems.combine()
         self.regress(self.pwr)
@@ -73,7 +74,7 @@ class Simulation(object):
         if sim.unplayed.empty:
             self.regularseason = sim.played
         else:
-            simulated = simulateGamelog(sim.unplayed, self.rankings, sim.st_dev)
+            simulated = simulateGamelog(sim.unplayed, self.rankings, sim.st_dev, sim.season)
             self.regularseason = pd.concat([sim.played, simulated], ignore_index=True)
         adjusted = pd.DataFrame([x + [1] for x in self.regularseason[['Winner','Loser','W Pts']].values.tolist()] +
                                 [x + [0] for x in self.regularseason[['Loser','Winner','L Pts']].values.tolist()],
@@ -86,22 +87,13 @@ class Simulation(object):
         self.playoffs = self.simulatePlayoffs(sim)
         self.standings = pd.merge(self.standings, self.seeding, how='left', on='Player', suffixes=('', '_')).drop('Division_', axis=1)
         
-    #simulates nba playoffs
     def simulatePlayoffs(self, sim):
-        players = Players(pd.merge(self.standings, self.seeding, on='Player', suffixes=('', '_')).drop('Division_', axis=1)).index(div=True)
-        results = {}
-        for division in set(players.keys()):
-            bracket = simulateBracket(Players(players.values[division]), st_dev=sim.st_dev)
-            results = {**results, **{(division, i):x for i, x in bracket.items()}}
-        results = dict((playoff_series_ids[key], value) for (key, value) in results.items())
-        players = players.copy().index(name=True)
-        a_champ = players.values[results[('A','Division Finals',1)]['Winner']][0]
-        b_champ = players.values[results[('B','Division Finals',1)]['Winner']][0]
-        result = simulateMatch(a_champ, b_champ, st_dev=sim.st_dev)
-        results[('AB','Finals',1)] = {'Winner':result['Winner'].name,'Loser':result['Loser'].name,'Games':result['Games']}
+        players = Players(pd.merge(self.standings, self.seeding, on='Player', suffixes=('', '_')).drop('Division_', axis=1))
+        bracket = simulateBracket(players, st_dev=sim.st_dev)
+        results = dict((playoff_series_ids[key], value) for (key, value) in bracket.items())
         df = pd.DataFrame.from_dict(results, orient='index').reset_index()
-        df[['Division','Round','Series']] = pd.DataFrame(df[['level_0','level_1','level_2']].values.tolist(), index=df.index)
-        return df[['Division','Round','Series','Winner','Loser','Games']]
+        df[['Round','Series']] = pd.DataFrame(df[['level_0','level_1']].values.tolist(), index=df.index)
+        return df[['Round','Series','Winner','Loser','Games']]
 
 class Simulations(object):
     def __init__(self, values, combine=True):
