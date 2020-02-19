@@ -103,7 +103,7 @@ class PWRsystems(object):
         zipped = zip(self.combined['z_scores'].values, self.combined['weights'].values)
         self.combined['Avg_z'] = [np.inner(x, y) / np.sum(y) for x, y in zipped]
         if self.scale is None:
-            self.combined['PWR'] = self.combined[self.systems[0].pwr].values
+            self.combined['PWR'] = self.combined[self.systems[0].pwrcol].values
         else:
             self.combined['PWR'] = self.combined['Avg_z'].values * self.scale['st_dev'] + self.scale['mean']
         return PWR(regress_to=self.regress_to, values=self.combined[['Player','PWR']]).calculate()
