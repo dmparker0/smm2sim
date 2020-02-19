@@ -4,24 +4,20 @@ import pandas as pd
 import re
 
 class PWR(object):
-    def __init__(self, weight=1, regress_to=None, values=None, pwr=None):
+    def __init__(self, weight=1, regress_to=None, values=None):
         self.weight = weight
         self.regress_to = regress_to
         if values is None:
             self.values = None
         else:
             self.values = values.copy()
-        if pwr is None:
-            self.pwr = [x for x in list(self.values) if x != 'Player'][0]
-        else:
-            self.pwr = pwr
         
     def calculate(self, **kwargs):
+        self.pwrcol = [x for x in list(self.values) if x not in ['Player']][0]
         return self
         
     def regress(self, df):
-        self.values[pwr] = self.regress_to.regress(df, pwr)
-        return self
+        self.values[self.pwrcol] = self.regress_to.regress(df, self.pwrcol)
 
 class SRS(PWR):
     def __init__(self, weight=1, regress_to=None):
