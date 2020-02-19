@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 class Regression(object):
-    def __init__(self, to=None, weight=None, n_games=16):
+    def __init__(self, to=None, weight=None, n_games=33):
         self.regression_values = to
         self.regression_weight = weight
         self.num_games = n_games
