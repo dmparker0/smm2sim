@@ -84,14 +84,14 @@ class PWRsystems(object):
                         
     def setDefaultScale(self):
         self.scale = {'st_dev':1.05,'mean':0}
-
+    
     def combine(self):
         if (len(self.systems) > 1) and (self.scale is None):
             self.setDefaultScale()
         self.combined = self.systems[0].values[['Player']]
         for system in self.systems:
             self.combined = pd.merge(self.combined, system.values, on='Player', suffixes=('','_'))
-            new_z = stats.zscore(self.combined[system.pwr].values)
+            new_z = stats.zscore(self.combined[system.pwrcol].values)
             new_weights = [system.weight] * self.combined.shape[0]
             if 'z_scores' not in self.combined:    
                 self.combined['z_scores'] = [[x] for x in new_z]
@@ -105,4 +105,4 @@ class PWRsystems(object):
             self.combined['PWR'] = self.combined[self.systems[0].pwr].values
         else:
             self.combined['PWR'] = self.combined['Avg_z'].values * self.scale['st_dev'] + self.scale['mean']
-        return PWR(regress_to=self.regress_to, values=self.combined[['Player','PWR']], pwr='PWR')
+        return PWR(regress_to=self.regress_to, values=self.combined[['Player','PWR']]).calculate()
