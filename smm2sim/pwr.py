@@ -21,7 +21,7 @@ class PWR(object):
 
 class SRS(PWR):
     def __init__(self, weight=1, regress_to=None):
-        PWR.__init__(self, weight, regress_to, pwr='SRS')
+        PWR.__init__(self, weight, regress_to)
     
     def calculate(self, **kwargs):
         if kwargs['season'] == 1:
