@@ -24,6 +24,7 @@ class SRS(PWR):
         PWR.__init__(self, weight, regress_to)
     
     def calculate(self, **kwargs):
+        self.pwrcol = 'SRS'
         if kwargs['season'] == 1:
             df = kwargs['gamelog'].groupby('Player').agg({'Pts':'mean'})
             df = df.rename(columns={'Pts':'SRS'}).reset_index()
