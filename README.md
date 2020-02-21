@@ -16,7 +16,7 @@ During each simulation, smm2sim uses the methods described below to assign a win
 
 Before beginning the simulations, each player is assigned a power rating (PWR), such that a player with a PWR of 8 would be expected to score an average of 8 points in a 15 minute match. By default, the base power rankings for each player are a simple average of their past results (excluding points scored during untimed tiebreakers). Custom ranking systems are also supported, which can be combined with the default ratings or replace them entirely. The individual rating systems and the combined rankings can be regressed to the mean (or to custom player-specific values) as desired.
 
-The player PWR rankings are adjusted at the beginning of each season simulation by a random amount, determined using a normal distribution with mean 0 and a user-provided standard deviation (1 point by default):
+The player PWR rankings are adjusted at the beginning of each season simulation by a random amount, determined using a normal distribution with mean 0 and a user-provided standard deviation (0.5 points by default):
 ```
 adjusted_pwr = [PWR] - numpy.random.normal(0, [rank_adj])
 ```
@@ -30,7 +30,7 @@ win_probability = 1 - scipy.stats.norm(pwr_difference, [stdev]).cdf(0)
 is_winner = numpy.random.random() < win_probability
 ```
 
-The standard deviation used to generate the normal distribution (2.5 points by default) is configurable.
+The standard deviation used to generate the normal distribution (1.7 points by default) is configurable.
 
 ### Usage
 
