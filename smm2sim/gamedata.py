@@ -9,6 +9,12 @@ def getPlayers(season=None):
         season = df['Season'].max()
     return df[df['Season'] == season][['Player','Division']]
 
+def getDisqualified(season=None):
+    df = pd.read_csv(StringIO(get('https://pastebin.com/raw/WpniLUb9').text))
+    if season is None:
+        season = df['Season'].max()
+    return df[df['Season'] == season]['Player'].tolist()
+
 def getMatches(season=None):
     games = pd.read_csv(StringIO(get('https://pastebin.com/raw/eTmbZM46').text))
     if season is None:
