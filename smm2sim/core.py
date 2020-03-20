@@ -1,4 +1,4 @@
-from .gamedata import getPlayers, getPointLog, getMatches, getUnplayed
+from .gamedata import getPlayers, getPointLog, getMatches, getUnplayed, getDisqualified
 from .pwr import PWRsystems
 from .regression import Regression
 from .simulate import simulateBracket, simulateMatch, simulateGamelog
@@ -23,6 +23,7 @@ class Simulate(object):
         self.points = getPointLog(season)
         self.played = getMatches(season)
         self.unplayed = getUnplayed(season)
+        self.dq = getDisqualified(season)
         for system in self.pwr_systems.systems:
             system.calculate(gamelog=self.points, season=season)
             self.regress(system)
@@ -83,6 +84,7 @@ class Simulation(object):
                       sim.players.rename({'Player':'Opponent','Division':'OppDivision'}, axis=1), on='Opponent')
         self.standings = pd.merge(df.groupby(['Player','Division']).agg({'Pts':'sum','Wins':'sum'}).reset_index(), 
                                   self.rankings, on='Player')
+        df['Wins'] = np.where(np.isin(df['Player'].values, sim.dq), 0, df['Wins'].values)
         self.seeding = getPlayoffSeeding(df)
         self.playoffs = self.simulatePlayoffs(sim)
         self.standings = pd.merge(self.standings, self.seeding, how='left', on='Player', suffixes=('', '_')).drop('Division_', axis=1)
